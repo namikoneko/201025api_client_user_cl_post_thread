@@ -1,0 +1,36 @@
+@charset "utf-8";
+/*
+.thread-wrapper {
+    width: 80%;
+    margin: 0 auto;
+}
+*/
+.thread-row {
+    border: 1px dotted #fff;
+    padding: 10px;
+    margin-bottom: 5px;
+}
+.thread-row-title {
+    border-bottom: 1px dotted #fff;
+}
+.thread-row-up {
+    border: 1px dotted #fff;
+    padding: 2px 4px;
+}
+.post-up, .cl-up {
+    border: 1px dotted #fff;
+    padding: 2px 4px;
+    margin-left: 3px;
+}
+.post-flex, .cl-flex {
+    display: flex;
+}
+.post-flex-item, .cl-flex-item {
+    border: 1px dotted #fff;
+    min-width: 50px;
+    padding: 10px;
+    margin: 4px 8px;
+    /*
+    background-color: #fff;
+    */
+}

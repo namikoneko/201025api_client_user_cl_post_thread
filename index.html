@@ -6,10 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://fonts.xz.style/serve/inter.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@exampledev/new.css@1.1.2/new.min.css">
-
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/kognise/water.css@latest/dist/dark.min.css">
+    <link rel="stylesheet" href="style.css">
     <!--
     <link rel="stylesheet" href="https://newcss.net/theme/night.css">
-    <link rel="stylesheet" href="style.css">
     -->
 <script src="https://unpkg.com/vue/dist/vue.js"></script>
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
@@ -70,9 +70,17 @@ const user = {
     <router-link :to="{ name: \'upduser\', params: {userid: userid}}">update</router-link>
     <button v-on:click="deluser(row.id)">delete</button>
     <div>
-    <input type="text" v-model="institle">
-    <button v-on:click="inscl">insert</button></div>
-    <div class="post-item" v-for="row in rows"><router-link :to="{ name: \'cl\', params: {userid: userid,id: row.id}}">{{row.title}}</router-link><button v-on:click="upcl(row.id)">up</button>{{row.id}}-{{row.title}}</div></div>`,
+      <input type="text" v-model="institle">
+      <button v-on:click="inscl">insert</button>
+    </div>
+
+    <div class="cl-flex">
+      <div class="cl-flex-item" v-for="row in rows">
+        <router-link :to="{ name: \'cl\', params: {userid: userid,id: row.id}}">{{row.title}}</router-link>
+        <a class="cl-up" v-on:click="upcl(row.id)">up</a>
+      </div>
+    </div>
+  </div>`,
     created: function(){
 	this.userid = this.$route.params.id;
 	//alert(this.userid);
@@ -153,8 +161,16 @@ const cl = {
     {{row.id}}-{{row.title}}
     <router-link :to="{ name: \'updcl\', params: {userid: userid,clid: clid}}">update</router-link>
     <button v-on:click="delcl(row.id)">delete</button>
-    <div><input type="text" v-model="institle"><br><textarea class="upd-textarea" v-model="instext"></textarea><button v-on:click="inspost">insert</button></div>
-    <div class="post-item" v-for="row in rows"><router-link :to="{ name: \'post\', params: {clid: clid,userid: userid,id: row.id}}">{{row.title}}</router-link><button v-on:click="uppost(row.id)">up</button>{{row.id}}-{{row.title}}</div></div>`,
+    <div><input type="text" v-model="institle">
+    <button v-on:click="inspost">insert</button></div>
+
+    <div class="post-flex">
+      <div class="post-flex-item" v-for="row in rows">
+      <router-link :to="{ name: \'post\', params: {clid: clid,userid: userid,id: row.id}}">{{row.title}}</router-link>
+      <a class="post-up"  v-on:click="uppost(row.id)">up</a>
+      </div>
+    </div>
+    </div>`,
     created: function(){
 	this.userid = this.$route.params.userid;
 	this.clid = this.$route.params.id;
@@ -228,20 +244,32 @@ const post = {
         userid: 0,clid: 0,row: "",postid: 0,institle: "", instext: "", findthreadtext: "", findtask: "", rows: "", clrows: "", name: "", page: 1
       }
     },//data
-    template: `<div>
+    template: `<div class="thread-wrapper">
     <router-link :to="{ name: \'users\'}">to users</router-link>
     <router-link :to="{ name: \'user\', params: {id: userid}}">to user</router-link>
     <router-link :to="{ name: \'cl\', params: {userid: userid,id: clid}}">to cl</router-link>
+    <br>
     {{row.id}}-{{row.title}}
     <router-link :to="{ name: \'updpost\', params: {userid: userid,clid: clid,postid: postid}}">update</router-link>
     <button v-on:click="delpost(row.id)">delete</button>
-    <div><input type="text" v-model="institle"><br><textarea class="upd-textarea" v-model="instext"></textarea><button v-on:click="insthread">insert</button></div>
+    <div class="thread-input">
+      <input type="text" v-model="institle">
+      <br>
+      <textarea class="upd-textarea" v-model="instext"></textarea><button v-on:click="insthread">insert</button>
+      </div>
     <div class="thread-row" v-for="row in rows">
-    <div class="thread-row-title">{{row.title}}-{{row.text}}
-    <button v-on:click="upthread(row.id)">up</button>
-    <router-link :to="{ name: \'updthread\', params: {userid: userid,clid: clid, postid: postid, id: row.id}}">update</router-link>
-    <button v-on:click="delthread(row.id)">delete</button></div>
-    </div></div>`,//{{row.id}}-{{row.title}}
+      <div class="thread-row-title">
+        {{row.title}}
+      </div>
+      <div class="thread-row-text">
+        {{row.text}}
+      </div>
+        <a class="thread-row-up" v-on:click="upthread(row.id)">up</a>
+        <router-link :to="{ name: \'updthread\', params: {userid: userid,clid: clid, postid: postid, id: row.id}}">update</router-link>
+        <a v-on:click="delthread(row.id)">delete</a>
+      </div>
+    </div><!--thread-row-->
+  </div>`,//route{{row.id}}-{{row.title}}
     created: function(){
 	this.userid = this.$route.params.userid;
 	this.clid = this.$route.params.clid;
