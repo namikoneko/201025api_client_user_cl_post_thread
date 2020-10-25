@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>myApp</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://fonts.xz.style/serve/inter.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@exampledev/new.css@1.1.2/new.min.css">
+
+    <!--
+    <link rel="stylesheet" href="https://newcss.net/theme/night.css">
+    <link rel="stylesheet" href="style.css">
+    -->
+<script src="https://unpkg.com/vue/dist/vue.js"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
+</head>
+<body>
+
+<div id="app">
+  <h1>Hello App!</h1>
+  <router-view></router-view>
+</div>
+
+<script>
+// users ############################################################
+const users = { 
+    data: function(){
+      return {
+        institle: "", instext: "", findthreadtext: "", findtask: "", rows: "", clrows: "", name: "", page: 1
+      }
+    },//data
+    template: `<div>
+    <input type="text" v-model="institle"><br>
+    <button v-on:click="insuser">insert</button>
+    <div class="post-item" v-for="row in rows">
+    <router-link :to="{ name: \'user\', params: { id: row.id }}">{{row.title}}</router-link>{{row.id}}-{{row.title}}</div>
+    </div>`,
+    components: {
+    },
+    created: function(){
+	axios.get("/php/xdomain/201020/users")
+          .then(response => this.rows = response.data);
+    },//created
+    methods: {
+        insuser: function(){//insuser ####################
+          let params = new URLSearchParams();
+          params.append('title', this.institle);
+          this.institle = "";
+          axios.post("/php/xdomain/201020/userins", params)
+                  .then(response => this.rows = response.data);
+        },//insuser
+        upuser: function(id){//upuser ####################
+	  axios.get("/php/xdomain/201020/userup/" + id)
+            .then(response => this.rows = response.data);
+        }//upuser
+    }//methods
+}//user
+
+// user-cls ############################################################
+const user = { 
+    data: function(){
+      return {
+        row: "",userid: 0,institle: "", instext: "", findthreadtext: "", findtask: "", rows: "", clrows: "", name: "", page: 1
+      }
+    },//data
+    template: `<div>
+    <router-link :to="{ name: \'users\'}">to users</router-link>
+    {{row.id}}-{{row.title}}
+    <router-link :to="{ name: \'upduser\', params: {userid: userid}}">update</router-link>
+    <button v-on:click="deluser(row.id)">delete</button>
+    <div>
+    <input type="text" v-model="institle">
+    <button v-on:click="inscl">insert</button></div>
+    <div class="post-item" v-for="row in rows"><router-link :to="{ name: \'cl\', params: {userid: userid,id: row.id}}">{{row.title}}</router-link><button v-on:click="upcl(row.id)">up</button>{{row.id}}-{{row.title}}</div></div>`,
+    created: function(){
+	this.userid = this.$route.params.id;
+	//alert(this.userid);
+	axios.get("/php/xdomain/201020/user/" + this.userid)
+          .then(response => this.row = response.data);
+	axios.get("/php/xdomain/201020/cls/" + this.userid)
+          .then(response => this.rows = response.data);
+    },//created
+    methods: {
+        inscl: function(){//inscl ####################
+          let params = new URLSearchParams();
+          params.append('userid', this.userid);
+          params.append('title', this.institle);
+                  this.institle = "";
+          axios.post("/php/xdomain/201020/clins", params)
+                  .then(response => this.rows = response.data);
+//		.then(()=>{
+//                  axios.get("/php/xdomain/201020/cls/" + this.userid)
+		//});
+        },//inscl
+        upcl: function(id){//upcl ####################
+	  axios.get("/php/xdomain/201020/clup/" + id)
+		.then(()=>{
+                  axios.get("/php/xdomain/201020/cls/" + this.userid)
+                  .then(response => this.rows = response.data);
+		});
+        },//upcl
+        deluser: function(id){
+	  axios.get("/php/xdomain/201020/userdel/" + id)
+		.then(() => {
+	          router.push({ name: 'users'});
+		});
+        }//deluser
+    }//methods
+}//user-cls
+
+// upduser ############################################################
+const upduser = { 
+    data: function(){
+      return {
+        userid: 0,clid: 0,offaddpost: "loading...",offpost: "loading...",addpost: "loading...",postid: 0, id: 0,rows: "", name: "", updtitle: "",  updtext: "", page: 1
+      }
+    },
+    template: `<div>
+    <input type="text" v-model="updtitle">
+    <br>
+    <button v-on:click="updexe">update</button>
+    </div>`,//
+    created: function(){
+        this.userid = this.$route.params.id;
+	axios.get("/php/xdomain/201020/userupd/" + this.userid)
+	    .then(response => {
+               this.updtitle = response.data.title;
+	    });
+    },//created
+    methods: {
+	updexe: function(){// updexe ######################################
+          let params = new URLSearchParams();
+          params.append('id', this.userid);
+          params.append('title', this.updtitle);
+	  axios.post("/php/xdomain/201020/userupdexe", params)
+		.then(() => {
+		  router.push({ name: 'user',params:{userid: this.userid}});
+		});
+	}//updexe
+    }//methods
+}//upduser
+
+// cl-post ############################################################
+const cl = { 
+    data: function(){
+      return {
+        row: "",userid: 0,clid: 0,postid: 0,institle: "", instext: "", findthreadtext: "", findtask: "", rows: "", clrows: "", name: "", page: 1
+      }
+    },//data
+    template: `<div>
+    <router-link :to="{ name: 'user', params: {id: userid}}">to user</router-link>
+    {{row.id}}-{{row.title}}
+    <router-link :to="{ name: \'updcl\', params: {userid: userid,clid: clid}}">update</router-link>
+    <button v-on:click="delcl(row.id)">delete</button>
+    <div><input type="text" v-model="institle"><br><textarea class="upd-textarea" v-model="instext"></textarea><button v-on:click="inspost">insert</button></div>
+    <div class="post-item" v-for="row in rows"><router-link :to="{ name: \'post\', params: {clid: clid,userid: userid,id: row.id}}">{{row.title}}</router-link><button v-on:click="uppost(row.id)">up</button>{{row.id}}-{{row.title}}</div></div>`,
+    created: function(){
+	this.userid = this.$route.params.userid;
+	this.clid = this.$route.params.id;
+	axios.get("/php/xdomain/201020/cl/" + this.clid)
+          .then(response => this.row = response.data);
+	axios.get("/php/xdomain/201020/posts/" + this.clid)
+          .then(response => this.rows = response.data);
+    },//created
+    methods: {
+        inspost: function(){//inspost ####################
+          let params = new URLSearchParams();
+          params.append('clid', this.clid);
+          params.append('title', this.institle);
+          this.institle = "";
+          axios.post("/php/xdomain/201020/postins", params)
+                  .then(response => this.rows = response.data);
+        },//inspost
+        uppost: function(id){//uppost ####################
+	  axios.get("/php/xdomain/201020/postup/" + id)
+		.then(()=>{
+                  axios.get("/php/xdomain/201020/posts/" + this.clid)
+                  .then(response => this.rows = response.data);
+		});
+        },//uppost
+        delcl: function(id){
+	  axios.get("/php/xdomain/201020/cldel/" + id)
+		.then(() => {
+		    router.push({ name: 'user', params:{id: this.userid}});
+		});
+        }//delcl
+    }//methods
+}//cl
+
+// updcl ############################################################
+const updcl = { 
+    data: function(){
+      return {
+        userid: 0,clid: 0,offaddpost: "loading...",offpost: "loading...",addpost: "loading...",postid: 0, id: 0,rows: "", name: "", updtitle: "",  updtext: "", page: 1
+      }
+    },
+    template: `<div>
+    <input type="text" v-model="updtitle">
+    <br>
+    <button v-on:click="updexe">update</button>
+    </div>`,//
+    created: function(){
+        this.userid = this.$route.params.userid;
+        this.clid = this.$route.params.id;
+	axios.get("/php/xdomain/201020/clupd/" + this.clid)
+	    .then(response => {
+               this.updtitle = response.data.title;
+	    });
+    },//created
+    methods: {
+	updexe: function(){// updexe ######################################
+          let params = new URLSearchParams();
+          params.append('id', this.clid);
+          params.append('title', this.updtitle);
+	  axios.post("/php/xdomain/201020/clupdexe", params)
+		.then(() => {
+		  router.push({ name: 'cl',params:{userid: this.userid,clid: this.clid}});
+		});
+	}//updexe
+    }//methods
+}//updcl
+
+// post-thread ############################################################
+const post = { 
+    data: function(){
+      return {
+        userid: 0,clid: 0,row: "",postid: 0,institle: "", instext: "", findthreadtext: "", findtask: "", rows: "", clrows: "", name: "", page: 1
+      }
+    },//data
+    template: `<div>
+    <router-link :to="{ name: \'users\'}">to users</router-link>
+    <router-link :to="{ name: \'user\', params: {id: userid}}">to user</router-link>
+    <router-link :to="{ name: \'cl\', params: {userid: userid,id: clid}}">to cl</router-link>
+    {{row.id}}-{{row.title}}
+    <router-link :to="{ name: \'updpost\', params: {userid: userid,clid: clid,postid: postid}}">update</router-link>
+    <button v-on:click="delpost(row.id)">delete</button>
+    <div><input type="text" v-model="institle"><br><textarea class="upd-textarea" v-model="instext"></textarea><button v-on:click="insthread">insert</button></div>
+    <div class="thread-row" v-for="row in rows">
+    <div class="thread-row-title">{{row.title}}-{{row.text}}
+    <button v-on:click="upthread(row.id)">up</button>
+    <router-link :to="{ name: \'updthread\', params: {userid: userid,clid: clid, postid: postid, id: row.id}}">update</router-link>
+    <button v-on:click="delthread(row.id)">delete</button></div>
+    </div></div>`,//{{row.id}}-{{row.title}}
+    created: function(){
+	this.userid = this.$route.params.userid;
+	this.clid = this.$route.params.clid;
+	this.postid = this.$route.params.id;
+	axios.get("/php/xdomain/201020/post/" + this.postid)
+          .then(response => this.row = response.data);
+	axios.get("/php/xdomain/201020/threads/" + this.postid)
+          .then(response => this.rows = response.data);
+    },//created
+    methods: {
+        insthread: function(){//insthread ####################
+	    //alert(this.institle);
+          let params = new URLSearchParams();
+          params.append('postid', this.postid);
+          params.append('title', this.institle);
+          params.append('text', this.instext);
+          this.institle = "";
+          this.instext = "";
+          axios.post("/php/xdomain/201020/threadins", params)
+                  .then(response => this.rows = response.data);
+        },//insthread
+        upthread: function(id){//upthread ####################
+	  axios.get("/php/xdomain/201020/threadup/" + id)
+		.then(()=>{
+                  axios.get("/php/xdomain/201020/threads/" + this.postid)
+                  .then(response => this.rows = response.data);
+		});
+        },//upthread
+        delthread: function(id){
+	  axios.get("/php/xdomain/201020/threaddel/" + id)
+		.then(()=>{
+                  axios.get("/php/xdomain/201020/threads/" + this.postid)
+                  .then(response => this.rows = response.data);
+		});
+        },//delthread
+        delpost: function(id){
+	  axios.get("/php/xdomain/201020/postdel/" + id)
+		.then(() => {
+		    router.push({ name: 'cl', params:{userid: this.userid,id: this.clid}});
+		});
+        }//delpost
+    }//methods
+}//post
+
+// updpost ############################################################
+const updpost = { 
+    data: function(){
+      return {
+        userid: 0,clid: 0,offaddpost: "loading...",offpost: "loading...",addpost: "loading...",postid: 0, id: 0,rows: "", name: "", updtitle: "",  updtext: "", page: 1
+      }
+    },
+    template: `<div>
+    <input type="text" v-model="updtitle">
+    <br>
+    <button v-on:click="updexe">update</button>
+    </div>`,//
+    created: function(){
+        this.userid = this.$route.params.userid;
+        this.clid = this.$route.params.clid;
+        this.postid = this.$route.params.id;
+	axios.get("/php/xdomain/201020/postupd/" + this.postid)
+	    .then(response => {
+               this.updtitle = response.data.title;
+	    });
+    },//created
+    methods: {
+	updexe: function(){// updexe ######################################
+          let params = new URLSearchParams();
+          params.append('id', this.postid);
+          params.append('title', this.updtitle);
+	  axios.post("/php/xdomain/201020/postupdexe", params)
+		.then(() => {
+		  router.push({ name: 'post',params:{userid: this.userid,clid: this.clid,id: this.postid}});
+		});
+	}//updexe
+    }//methods
+}//updpost
+
+// updthread ############################################################
+const updthread = { 
+    data: function(){
+      return {
+        userid: 0,clid: 0,offaddpost: "loading...",offpost: "loading...",addpost: "loading...",postid: 0, id: 0,rows: "", name: "", updtitle: "",  updtext: "", page: 1
+      }
+    },
+    template: `<div>
+    <input type="text" v-model="updtitle">
+    <textarea class="upd-textarea" v-model="updtext">{{updtext}}</textarea>
+    <br>
+    <button v-on:click="updexe">update</button>
+    <button v-on:click="updclear">clear</button>
+    </div>`,//
+    created: function(){
+        this.userid = this.$route.params.userid;
+        this.clid = this.$route.params.clid;
+        this.postid = this.$route.params.postid;
+        this.id = this.$route.params.id;
+	axios.get("/php/xdomain/201020/threadupd/" + this.id)
+	    .then(response => {
+               this.rows = response.data;
+               this.updtitle = this.rows.title;
+               this.updtext = this.rows.text;
+	    });
+    },//created
+    methods: {
+	updexe: function(){// updexe ######################################
+          let params = new URLSearchParams();
+          params.append('id', this.id);
+          params.append('title', this.updtitle);
+          params.append('text', this.updtext);
+	  axios.post("/php/xdomain/201020/threadupdexe", params)
+		.then(() => {
+	          router.push({ name: 'post', params: {userid: this.userid,clid: this.clid,postid: this.postid,id: this.postid}});
+		});
+	},//updexe
+	updclear: function(){
+	    this.updtext = "";
+	}//updclear
+    }//methods
+}//updthread
+
+// thread ############################################################
+const thread = { 
+    data: function(){ 
+      return {
+        institle: "", instext: "", findthreadtext: "", findtask: "", rows: "", clrows: "", name: "", page: 1
+      }
+    },//data
+    template: '<div><div class="thread-item" v-for="row in rows"><router-link :to="{ name: \'thread\', params: {id: row.id}}">{{row.title}}</router-link>{{row.id}}-{{row.title}}</div></div>',
+    created: function(){
+	axios.get("/php/xdomain/201020/thread")
+          .then(response => this.rows = response.data);
+    },//created
+    methods: {
+        insthread: function(){//insthread ####################
+          let params = new URLSearchParams();
+          params.append('title', this.institle);
+          axios.user("/php/xdomain/201020/insthread", params)
+		.then(()=>{
+        	axios.get("/php/xdomain/201020/thread")
+                  .then(response => this.rows = response.data);
+                  this.institle = "";
+		});
+        },//insthread
+        upthread: function(id){//upthread ####################
+	  axios.get("/php/xdomain/201020/threadup/" + id)
+            .then(response => this.rows = response.data);
+        }//upthread
+    }//methods
+}//thread
+
+// routes ############################################################
+const routes = [
+  { path: '/users', name: 'users', component: users },
+  { path: '/user/:id', name: 'user', component: user },
+  { path: '/upduser/:id', name: 'upduser', component: upduser },
+  { path: '/cl/:userid/:id', name: 'cl', component: cl },
+  { path: '/updcl/:userid/:id', name: 'updcl', component: updcl },
+  { path: '/post/:userid/:clid/:id', name: 'post', component: post },
+  { path: '/updpost/:userid/:clid/:id', name: 'updpost', component: updpost },
+  { path: '/updthread/:postid/:id', name: 'updthread', component: updthread },
+  { path: '/thread/:id', name: 'thread', component: thread },
+    ]
+
+// routes ############################################################
+const router = new VueRouter({
+  routes // `routes: routes` の短縮表記
+})
+
+// app ############################################################
+new Vue({
+  router,
+  created: function(){
+  },
+  data: {
+  },
+   methods: {
+  }
+}).$mount('#app') 
+</script>
+</div>
+</body>
+</html>
